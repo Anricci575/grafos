@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificador de Grafos Planares</title>
+    <style>
+        :root {
+            --primary: #4285F4;
+            --primary-dark: #3367D6;
+            --danger: #EA4335;
+            --danger-dark: #D33426;
+            --success: #34A853;
+            --warning: #FBBC05;
+            --dark: #202124;
+            --light: #F8F9FA;
+            --gray: #E0E0E0;
+            --dark-gray: #5F6368;
+            --text: #3C4043;
+            --white: #FFFFFF;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--light);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--gray);
+        }
+
+        h1 {
+            color: var(--dark);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .subtitle {
+            color: var(--dark-gray);
+            font-weight: 400;
+        }
+
+        .app-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .graph-section {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .controls-section {
+            flex: 0 0 300px;
+        }
+
+        .panel {
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .panel-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--dark);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-title i {
+            font-size: 1.4rem;
+        }
+
+        #graph-canvas {
+            width: 100%;
+            height: 500px;
+            border: 1px solid var(--gray);
+            border-radius: 8px;
+            background-color: var(--white);
+            display: block;
+            touch-action: none;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--primary);
+            color: var(--white);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button i {
+            font-size: 1.1rem;
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background-color: var(--danger-dark);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+            color: var(--dark);
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .status-planar {
+            background-color: rgba(52, 168, 83, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(52, 168, 83, 0.3);
+        }
+
+        .status-non-planar {
+            background-color: rgba(234, 67, 53, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(234, 67, 53, 0.3);
+        }
+
+        .status-neutral {
+            background-color: rgba(95, 99, 104, 0.1);
+            color: var(--dark-gray);
+            border: 1px solid rgba(95, 99, 104, 0.3);
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 12px;
+            border: 1px solid var(--gray);
+            border-radius: 4px;
+            font-family: 'Roboto Mono', monospace;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+
+        .info-panel {
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .info-panel h3 {
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+
+        .info-panel p {
+            margin-bottom: 10px;
+        }
+
+        .info-panel ul {
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .info-panel li {
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Tooltip styles */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--dark);
+            color: var(--white);
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9rem;
+            font-weight: normal;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Roboto+Mono&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Verificador de Grafos Planares</h1>
+            <p class="subtitle">Herramienta interactiva para analizar la planaridad de grafos</p>
+        </header>
+
+        <div class="app-container">
+            <div class="graph-section">
+                <div class="panel">
+                    <h2 class="panel-title"><i class="fas fa-project-diagram"></i> Visualización del Grafo</h2>
+                    <canvas id="graph-canvas"></canvas>
+                </div>
+
+                <div id="status" class="status status-neutral">Grafo no verificado</div>
+
+                <div class="panel">
+                    <h2 class="panel-title"><i class="fas fa-code"></i> Representación JSON</h2>
+                    <textarea id="graph-json" placeholder='Ejemplo: {"nodes":[{"id":"n1","x":100,"y":100}],"edges":[{"from":"n1","to":"n2"}]}'></textarea>
+                    <div class="controls">
+                        <button id="update-from-json"><i class="fas fa-sync-alt"></i> Actualizar desde JSON</button>
+                        <button id="download-json"><i class="fas fa-download"></i> Descargar JSON</button>
+                        <button id="load-example" class="btn-warning"><i class="fas fa-lightbulb"></i> Cargar Ejemplo</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls-section">
+                <div class="panel">
+                    <h2 class="panel-title"><i class="fas fa-sliders-h"></i> Controles</h2>
+                    <div class="controls">
+                        <button id="add-node" class="tooltip">
+                            <i class="fas fa-plus-circle"></i> Añadir Nodo
+                            <span class="tooltiptext">Haz clic en el área del grafo para añadir un nuevo nodo</span>
+                        </button>
+                        <button id="add-edge" class="tooltip">
+                            <i class="fas fa-link"></i> Añadir Arista
+                            <span class="tooltiptext">Selecciona dos nodos para conectarlos con una arista</span>
+                        </button>
+                        <button id="clear" class="btn-danger">
+                            <i class="fas fa-trash-alt"></i> Limpiar Todo
+                        </button>
+                        <button id="check-planar" class="btn-success">
+                            <i class="fas fa-check"></i> Verificar Planaridad
+                        </button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2 class="panel-title"><i class="fas fa-shapes"></i> Grafos Especiales</h2>
+                    <div class="controls">
+                        <button id="generate-k5" class="tooltip">
+                            <i class="fas fa-project-diagram"></i> Generar K₅
+                            <span class="tooltiptext">Grafo completo con 5 nodos (no planar)</span>
+                        </button>
+                        <button id="generate-k33" class="tooltip">
+                            <i class="fas fa-project-diagram"></i> Generar K₃,₃
+                            <span class="tooltiptext">Grafo bipartito completo con 3 nodos en cada partición (no planar)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="info-panel">
+                    <h3><i class="fas fa-info-circle"></i> Acerca de los Grafos Planares</h3>
+                    <p>Un grafo es <strong>planar</strong> si puede dibujarse en un plano sin que ninguna de sus aristas se cruce.</p>
+                    
+                    <h4>Teoremas importantes:</h4>
+                    <ul>
+                        <li><strong>K₅</strong> (grafo completo con 5 nodos) y <strong>K₃,₃</strong> (grafo bipartito completo con 3 nodos en cada partición) son los grafos no planares mínimos según el <strong>teorema de Kuratowski</strong>.</li>
+                        <li>Para grafos conexos con <em>v ≥ 3</em>, si <em>e ≤ 3v - 6</em>, entonces el grafo es planar.</li>
+                    </ul>
+                    
+                    <h4>Instrucciones:</h4>
+                    <ol>
+                        <li>Añade nodos haciendo clic en el área del grafo</li>
+                        <li>Conecta nodos con aristas seleccionando el modo "Añadir Arista" y luego haciendo clic en dos nodos</li>
+                        <li>Verifica la planaridad con el botón correspondiente</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
